@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# SCAM: Benchmark results (contain model responses, may be large)
+results/**/*.json
+results/**/*.md
+results/**/*.log
+!results/**/.gitkeep
+!results/official/**
+
+# SCAM: HTML + video exports
+exports/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Misc
+*.log

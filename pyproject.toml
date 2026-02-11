@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "scam"
+version = "0.1.0"
+description = "SCAM — Test whether AI agents leak credentials, fall for phishing, and protect users"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+    "anthropic>=0.39.0",
+    "openai>=1.50.0",
+    "google-genai>=1.0.0",
+    "httpx>=0.27.0",
+    "typer[all]>=0.12.0",
+    "rich>=13.9.0",
+    "pydantic>=2.9.0",
+    "aiosqlite>=0.20.0",
+    "tenacity>=9.0.0",
+    "rapidfuzz>=3.10.0",
+    "pyyaml>=6.0",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+scam = "scam.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scam"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
