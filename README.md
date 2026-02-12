@@ -1,6 +1,6 @@
 # SCAM — Security Comprehension Awareness Measure
 
-**By [1Password](https://1password.com/blog/ai-agent-security-benchmark)
+**By [1Password](https://1password.com/blog/ai-agent-security-benchmark)**
 
 > **[View the leaderboard, watch replays, and try the security skill at 1password.github.io/SCAM](https://1password.github.io/SCAM/)**
 
