@@ -38,7 +38,24 @@ The benchmark covers 30 scenarios across 9 threat categories: **Phishing** · **
 
 SCAM ships with a security skill ([`security-awareness/SKILL.md`](skills/security-awareness/SKILL.md)) — a plain-text system prompt addition that teaches agents to analyze before acting: verify domains before clicking, read content before forwarding, check URLs before entering credentials.
 
-In our benchmarks, this single skill raised average safety scores from ~50% to ~90% across all models tested. It works with any model and any provider. See the [website](https://1password.github.io/SCAM/#skill) for integration instructions.
+In our benchmarks, this single skill raised average safety scores from ~50% to ~90% across all models tested. It works with any model and any provider.
+
+### Install
+
+The fastest way to install the skill is with [npx add-skill](https://add-skill.org/), which auto-detects your agent (Claude Code, Cursor, Codex, and 35+ others):
+
+```bash
+npx add-skill 1Password/SCAM
+```
+
+Or download it directly:
+
+```bash
+curl -sL https://raw.githubusercontent.com/1Password/SCAM/main/skills/security-awareness/SKILL.md \
+  -o skills/security-awareness/SKILL.md --create-dirs
+```
+
+Then prepend the file contents to your system prompt, or drop it into your agent's skills directory (`.claude/skills/`, `.cursor/skills/`, etc.). See the [website](https://1password.github.io/SCAM/#skill) for detailed integration examples per provider.
 
 ## Results
 

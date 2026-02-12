@@ -3035,6 +3035,7 @@ scam evaluate -i</pre>
     {terminal_html}
     <p class="term-caption">
       A full evaluation across 8 models, {total_scenarios} scenarios, 3 runs each. About 20 minutes, ~$36.
+      <br><a href="https://github.com/1Password/SCAM/blob/main/USAGE.md" style="color:var(--accent);font-weight:600;font-size:0.82rem;">Full CLI reference and usage guide &rarr;</a>
     </p>
     <div class="contribute-cta">
       <h3 class="subsection-title">Help make SCAM better</h3>
@@ -3169,17 +3170,7 @@ function copyCode(btnEl) {
     });
   }
 }
-function copyCursorSkill(btnEl) {
-  var raw = document.getElementById('cursor-skill-raw');
-  if (raw) {
-    navigator.clipboard.writeText(raw.textContent).then(function() {
-      var orig = btnEl.textContent;
-      btnEl.textContent = 'Copied!';
-      btnEl.classList.add('copied');
-      setTimeout(function() { btnEl.textContent = orig; btnEl.classList.remove('copied'); }, 2000);
-    });
-  }
-}
+
 function showSkillView(view) {
   var rendered = document.getElementById('sv-rendered');
   var raw = document.getElementById('sv-raw');
@@ -3541,14 +3532,6 @@ response = client.models.generate_content(
     ),
 )'''
 
-    # Build the Cursor .mdc file content for the code block
-    cursor_mdc_content = f"""---
-description: Security awareness skill for agentic AI
-alwaysApply: true
----
-
-{skill_text.strip()}"""
-
     return f"""
 <div class="tabs" style="margin-top:0;">
   <button class="tab-btn active" data-tab-btn="guide" onclick="switchTab('guide','guide-openai')">OpenAI</button>
@@ -3658,49 +3641,49 @@ alwaysApply: true
     <div class="step-item">
       <div class="step-num">1</div>
       <div class="step-body">
-        <h4>Create a rule file</h4>
-        <p>The skill is just text &mdash; drop it into whichever file your IDE or coding agent reads for instructions. Here's where each tool looks:</p>
-        <table style="font-size:0.84rem;margin:12px 0 4px;border-collapse:collapse;width:100%;">
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Cursor</td>
-            <td style="padding:6px 0;"><code>.cursor/rules/security-awareness.mdc</code></td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Windsurf</td>
-            <td style="padding:6px 0;"><code>.windsurfrules</code></td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Claude Code</td>
-            <td style="padding:6px 0;"><code>CLAUDE.md</code></td>
-          </tr>
-          <tr style="border-bottom:1px solid var(--border);">
-            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">GitHub Copilot</td>
-            <td style="padding:6px 0;"><code>.github/copilot-instructions.md</code></td>
-          </tr>
-          <tr>
-            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Other</td>
-            <td style="padding:6px 0;"><code>AGENTS.md</code> in project root</td>
-          </tr>
-        </table>
+        <h4>Install with one command</h4>
+        <p>The skill follows the <a href="https://agentskills.io" style="color:var(--accent);">Agent Skills</a> open standard. Install it with <a href="https://add-skill.org/" style="color:var(--accent);">npx add-skill</a>, which auto-detects your agent and places the skill in the right directory:</p>
+        <div class="code-block-wrap">
+          <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>npx add-skill 1Password/SCAM</pre>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-tertiary);margin-top:8px;">Works with Claude Code, Cursor, Codex, and <a href="https://add-skill.org/" style="color:var(--accent);">35+ other agents</a>. Requires Node.js.</p>
       </div>
     </div>
     <div class="step-item">
       <div class="step-num">2</div>
       <div class="step-body">
-        <h4>Paste the skill content</h4>
-        <p>For <strong>Cursor</strong>, use the <code>.mdc</code> format with frontmatter so the skill is always active. For other tools, paste the skill text at the top of the instructions file.</p>
-        <div class="code-block-wrap">
-          <button class="code-copy-btn" onclick="copyCursorSkill(this)">Copy</button>
-          <pre>{_highlight_md_raw(cursor_mdc_content)}</pre>
-          <pre id="cursor-skill-raw" style="display:none;">{html.escape(cursor_mdc_content)}</pre>
-        </div>
+        <h4>Or install manually</h4>
+        <p>If you prefer, copy the skill file into your agent's skills directory. Each tool looks in a standard location:</p>
+        <table style="font-size:0.84rem;margin:12px 0 4px;border-collapse:collapse;width:100%;">
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Claude Code</td>
+            <td style="padding:6px 0;"><code>.claude/skills/security-awareness/SKILL.md</code></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Cursor</td>
+            <td style="padding:6px 0;"><code>.cursor/skills/security-awareness/SKILL.md</code></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Codex</td>
+            <td style="padding:6px 0;"><code>.codex/skills/security-awareness/SKILL.md</code></td>
+          </tr>
+          <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">GitHub Copilot</td>
+            <td style="padding:6px 0;"><code>.github/copilot-instructions.md</code> (paste contents)</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 12px 6px 0;font-weight:600;white-space:nowrap;">Other</td>
+            <td style="padding:6px 0;">Prepend <code>SKILL.md</code> contents to your system prompt</td>
+          </tr>
+        </table>
       </div>
     </div>
     <div class="step-item">
       <div class="step-num">3</div>
       <div class="step-body">
         <h4>That's it</h4>
-        <p>The skill applies security analysis automatically whenever your coding agent handles emails, URLs, credentials, or web content. Works with any model your IDE supports. Commit the file to your repo so every contributor gets the same protection.</p>
+        <p>The skill activates automatically when your agent encounters security-relevant tasks. It works with any model your IDE supports. Commit the skill directory to your repo so every contributor gets the same protection.</p>
       </div>
     </div>
   </div>
