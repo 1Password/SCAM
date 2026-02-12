@@ -19,6 +19,8 @@ import urllib.parse
 import zipfile
 from pathlib import Path
 
+import yaml
+
 from scam.agentic.export_html import (
     _CSS,
     _JS,
@@ -26,6 +28,26 @@ from scam.agentic.export_html import (
     prepare_scenario_data,
 )
 from scam.agentic.results import iter_scenarios, get_run_metadata_for_scenario
+
+
+def _skill_relative_name(skill_path: Path) -> str:
+    """Return a display name for the skill file.
+
+    For Agent Skills format (e.g. ``skills/security-awareness/SKILL.md``),
+    returns ``security-awareness/SKILL.md`` so GitHub links and display
+    strings include the parent directory.  For legacy flat files
+    (e.g. ``skills/security_expert.md``), returns just the filename.
+    """
+    try:
+        # If the path is under a skills/ directory, make it relative
+        parts = skill_path.parts
+        idx = list(parts).index("skills")
+        rel = "/".join(parts[idx + 1:])
+        if rel:
+            return rel
+    except ValueError:
+        pass
+    return skill_path.name
 
 
 # ── Design tokens (1Password developer aesthetic) ────────────────────
@@ -738,6 +760,91 @@ a.cat-tag:hover {
 }
 .skill-download:hover { background: var(--accent-hover); text-decoration: none; color: #fff; }
 
+/* ── Quick Install ───────────────────────────────────────── */
+.quick-install {
+  margin: 32px 0 22px; padding: 0;
+  border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+.quick-install-header {
+  padding: 22px 28px 18px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+}
+.quick-install-title {
+  font-size: 1.08rem; font-weight: 700; margin: 0 0 4px;
+  color: var(--text); letter-spacing: -0.01em;
+}
+.quick-install-sub {
+  font-size: 0.84rem; color: var(--text-secondary); margin: 0;
+}
+.quick-install-body { padding: 0 28px 24px; }
+.quick-install .tabs {
+  margin: 0 -28px; padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+.quick-install .tab-btn {
+  border: none; border-radius: 0;
+  padding: 10px 18px; font-size: 0.82rem;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: transparent;
+}
+.quick-install .tab-btn:hover { background: transparent; color: var(--text); }
+.quick-install .tab-btn.active {
+  background: transparent; color: var(--accent);
+  border-bottom-color: var(--accent);
+  border-color: transparent; border-bottom-color: var(--accent);
+}
+.quick-install .tab-content {
+  display: none; border: none; border-radius: 0;
+  background: transparent; padding: 20px 0 0;
+}
+.quick-install .tab-content.active { display: block; }
+.quick-install .code-block-wrap {
+  position: relative; margin: 0;
+}
+.quick-install .code-block-wrap pre {
+  font-size: 0.84rem; padding: 16px 80px 16px 18px;
+  border-radius: 10px; line-height: 1.6;
+  background: #1a1a2e;
+}
+.quick-install-desc {
+  display: flex; gap: 10px; align-items: flex-start;
+  margin-top: 14px; font-size: 0.84rem; line-height: 1.55;
+  color: var(--text-secondary);
+}
+.quick-install-desc a { color: var(--accent); }
+.qi-icon {
+  flex-shrink: 0; margin-top: 1px; width: 18px; height: 18px;
+  color: var(--text-tertiary); opacity: 0.7;
+}
+.qi-manual-steps {
+  margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.qi-manual-steps li {
+  display: flex; gap: 12px; align-items: baseline;
+  font-size: 0.86rem; color: var(--text-secondary); line-height: 1.55;
+}
+.qi-step-num {
+  flex-shrink: 0; width: 22px; height: 22px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+  background: var(--accent); color: #fff;
+}
+.qi-manual-steps li a { color: var(--accent); font-weight: 600; }
+.qi-manual-steps li strong { color: var(--text); }
+@media (max-width: 700px) {
+  .quick-install-header { padding: 18px 18px 14px; }
+  .quick-install-body { padding: 0 18px 18px; }
+  .quick-install .tabs { margin: 0 -18px; padding: 0 18px; }
+  .quick-install .code-block-wrap pre { font-size: 0.78rem; padding: 14px 70px 14px 14px; }
+  .quick-install .tab-btn { padding: 9px 14px; font-size: 0.78rem; }
+}
+
 /* ── Quick start steps ───────────────────────────────────── */
 .steps { counter-reset: step; margin-top: 0; }
 .step-item {
@@ -1221,7 +1328,7 @@ Runs per model [1]&gt; <span class="tc"></span></div>
 <span class="t-d">╭──────────────────────────────────────────────────────────────────╮
 │</span> <span class="t-b">Benchmark Configuration</span>                                          <span class="t-d">│
 │</span>                                                                  <span class="t-d">│
-│</span>   Mode       <span class="t-c">Evaluate</span> (baseline vs security_expert.md)           <span class="t-d">│
+│</span>   Mode       <span class="t-c">Evaluate</span> (baseline vs security-awareness/SKILL.md)   <span class="t-d">│
 │</span>   Models     <span class="t-b">8 models</span>                                            <span class="t-d">│
 │</span>   Scenarios  30 scenarios (9 categories)                         <span class="t-d">│
 │</span>   Runs       3 per phase                                         <span class="t-d">│
@@ -1250,7 +1357,7 @@ Proceed? [y/N]: <span class="tc"></span></div>
 <span class="t-d">╭──────────────────────────────────────────────────────────────────╮
 │</span> <span class="t-b">SCAM Unified Report</span>  --  evaluate                                <span class="t-d">│
 │</span> Models: 8  |  Scenarios: 30  |  Runs per phase: 3                <span class="t-d">│
-│</span> Skill: security_expert.md  |  Cost: <span class="t-y">$38.38</span>                       <span class="t-d">│
+│</span> Skill: security-awareness/SKILL.md  |  Cost: <span class="t-y">$38.38</span>             <span class="t-d">│
 ╰──────────────────────────────────────────────────────────────────╯</span>
 </div>
 
@@ -1728,7 +1835,7 @@ benchmark run so you can independently verify the published results.
         n_scenarios=n_scenarios,
         n_runs=n_runs,
         skill_text=skill_text,
-        skill_filename=skill_path.name,
+        skill_filename=_skill_relative_name(skill_path),
         replay_links=replay_links,
         category_counts=cat_counts,
         zip_sha256=zip_sha256,
@@ -2566,16 +2673,24 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
     # ── The Skill ─────────────────────────────────────────────
     if skill_text:
         # Parse YAML frontmatter for version, then strip it from display text
-        import re as _re
         skill_version = None
         _display_skill = skill_text
         if skill_text.startswith("---"):
             _fm_end = skill_text.find("\n---", 3)
             if _fm_end != -1:
                 _fm_block = skill_text[3:_fm_end]
-                _ver_match = _re.search(r"version:\s*([\d]+\.[\d]+\.[\d]+)", _fm_block)
-                if _ver_match:
-                    skill_version = _ver_match.group(1)
+                try:
+                    _fm_data = yaml.safe_load(_fm_block)
+                    if isinstance(_fm_data, dict):
+                        # Agent Skills format: metadata.version
+                        _meta = _fm_data.get("metadata", {})
+                        if isinstance(_meta, dict) and "version" in _meta:
+                            skill_version = str(_meta["version"])
+                        # Legacy format: top-level version
+                        elif "version" in _fm_data:
+                            skill_version = str(_fm_data["version"])
+                except Exception:
+                    pass
                 _display_skill = skill_text[_fm_end + 4:].lstrip("\n")
 
         skill_html = _md_to_html(_display_skill)
@@ -2614,10 +2729,65 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
       </a>{f'<span style="font-size:0.78rem;color:var(--text-tertiary);margin-left:10px;">v{html.escape(skill_version)}</span>' if skill_version else ''}
     </div>
 
+    <div class="quick-install">
+      <div class="quick-install-header">
+        <h3 class="quick-install-title">Quick Install</h3>
+        <p class="quick-install-sub">One command adds the security skill to your coding agent.</p>
+      </div>
+
+      <div class="quick-install-body">
+        <div class="tabs">
+          <button class="tab-btn active" data-tab-btn="qi" onclick="switchTab('qi','qi-npx')">npx (any agent)</button>
+          <button class="tab-btn" data-tab-btn="qi" onclick="switchTab('qi','qi-curl')">curl</button>
+          <button class="tab-btn" data-tab-btn="qi" onclick="switchTab('qi','qi-manual')">Manual</button>
+        </div>
+
+        <div class="tab-content active" id="qi-npx" data-tab-group="qi">
+          <div class="code-block-wrap">
+            <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><span class="hl-kw">npx</span> add-skill 1Password/SCAM</pre>
+          </div>
+          <div class="quick-install-desc">
+            <svg class="qi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span>Auto-detects your agent (Claude Code, Cursor, Codex, and <a href="https://add-skill.org/">35+ others</a>) and installs the skill to the right directory. Requires Node.js.</span>
+          </div>
+        </div>
+
+        <div class="tab-content" id="qi-curl" data-tab-group="qi">
+          <div class="code-block-wrap">
+            <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+            <pre><span class="hl-kw">curl</span> -sL https://raw.githubusercontent.com/1Password/SCAM/main/skills/security-awareness/SKILL.md \\
+  -o skills/security-awareness/SKILL.md --create-dirs</pre>
+          </div>
+          <div class="quick-install-desc">
+            <svg class="qi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            <span>Downloads the skill file directly. No dependencies required. Then prepend it to your system prompt or drop it into your agent's skills directory.</span>
+          </div>
+        </div>
+
+        <div class="tab-content" id="qi-manual" data-tab-group="qi">
+          <ol class="qi-manual-steps">
+            <li>
+              <span class="qi-step-num">1</span>
+              <span>Download <a href="https://github.com/1Password/SCAM/blob/main/skills/{html.escape(skill_filename)}">{html.escape(skill_filename)}</a> from GitHub.</span>
+            </li>
+            <li>
+              <span class="qi-step-num">2</span>
+              <span>Place it in your project or prepend its contents to your system prompt.</span>
+            </li>
+            <li>
+              <span class="qi-step-num">3</span>
+              <span>See <strong>API Integration</strong> below for provider-specific code examples.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
     <details class="integrate-accordion">
       <summary class="integrate-accordion-toggle">
-        <span class="integrate-accordion-title">How to Use the Skill</span>
-        <span class="integrate-accordion-hint">Prepend the skill to your system prompt. Click for integration examples.</span>
+        <span class="integrate-accordion-title">API Integration</span>
+        <span class="integrate-accordion-hint">For custom setups: prepend the skill to your system prompt. Click for provider examples.</span>
         <svg class="integrate-accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </summary>
       <div class="integrate-accordion-body">

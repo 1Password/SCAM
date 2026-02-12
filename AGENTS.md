@@ -57,7 +57,9 @@ scenarios/                      # Agentic scenario YAML files (main contribution
 
 skills/                         # System prompt skill files
 ├── baseline.md                 # Minimal prompt (control condition)
-└── security_expert.md          # Security awareness guidance
+├── security_expert.md          # Symlink to security-awareness/SKILL.md
+└── security-awareness/
+    └── SKILL.md                # Security awareness skill (Agent Skills format)
 
 results/
 ├── official/                   # Tracked official evaluation results
@@ -231,7 +233,7 @@ When adding new functionality, add corresponding tests. The test suite must pass
 ### Run agentic evaluation
 
 ```bash
-scam run --model gpt-4o --skill skills/security_expert.md
+scam run --model gpt-4o --skill skills/security-awareness/SKILL.md
 scam evaluate --model gpt-4o
 ```
 
@@ -249,7 +251,7 @@ scam export results/agentic/model-no-skill.json --video --scenario phish-shared-
 ### Compare results
 
 ```bash
-scam compare results/agentic/gpt-4o-no-skill.json results/agentic/gpt-4o-security_expert.json
+scam compare results/agentic/gpt-4o-no-skill.json results/agentic/gpt-4o-security-awareness.json
 ```
 
 ### Add cost data for a new model

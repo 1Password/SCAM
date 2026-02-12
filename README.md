@@ -36,7 +36,7 @@ The benchmark covers 30 scenarios across 9 threat categories: **Phishing** · **
 
 ## The Security Skill
 
-SCAM ships with a security skill ([`security_expert.md`](skills/security_expert.md)) — a plain-text system prompt addition that teaches agents to analyze before acting: verify domains before clicking, read content before forwarding, check URLs before entering credentials.
+SCAM ships with a security skill ([`security-awareness/SKILL.md`](skills/security-awareness/SKILL.md)) — a plain-text system prompt addition that teaches agents to analyze before acting: verify domains before clicking, read content before forwarding, check URLs before entering credentials.
 
 In our benchmarks, this single skill raised average safety scores from ~50% to ~90% across all models tested. It works with any model and any provider. See the [website](https://1password.github.io/SCAM/#skill) for integration instructions.
 

@@ -9,7 +9,7 @@ Full CLI reference and operational documentation for SCAM. For an overview of wh
 ```bash
 scam run --model gpt-4o                    # Single model
 scam run --model gpt-4o,claude-sonnet-4    # Multiple models
-scam run --model gpt-4o --skill skills/security_expert.md  # With a skill
+scam run --model gpt-4o --skill skills/security-awareness/SKILL.md  # With a skill
 scam run --model gpt-4o --verbose          # See full transcripts
 scam run --model gpt-4o --judge-model gpt-4o-mini  # LLM judge fallback
 scam run --model gpt-4o --runs 5           # Multi-run for statistical confidence
@@ -75,7 +75,7 @@ scam scenarios --categories     # List categories
 ### `scam compare` / `scam report` — Analyze Results
 
 ```bash
-scam compare results/agentic/model-no-skill.json results/agentic/model-security_expert.json
+scam compare results/agentic/model-no-skill.json results/agentic/model-security-awareness.json
 scam report results/agentic/model-no-skill.json --output report.md
 ```
 
@@ -113,7 +113,7 @@ Skills are markdown files that get prepended to the agent's system prompt. They 
 | Skill | Description |
 |-------|-------------|
 | `baseline.md` | Minimal prompt (used as the control in `evaluate`) |
-| `security_expert.md` | Security awareness guidance: domain verification, credential handling, content analysis before action |
+| `security-awareness/SKILL.md` | Security awareness guidance: domain verification, credential handling, content analysis before action |
 
 ## Supported Providers
 
@@ -213,7 +213,9 @@ SCAM/
 │   └── _template.yaml         # Starter template for contributors
 ├── skills/                    # System prompt skill files
 │   ├── baseline.md
-│   └── security_expert.md
+│   ├── security_expert.md      # Symlink to security-awareness/SKILL.md
+│   └── security-awareness/
+│       └── SKILL.md
 ├── results/
 │   ├── official/              # Tracked official evaluation results
 │   └── agentic/               # Scratch evaluations (gitignored)

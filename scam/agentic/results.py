@@ -264,7 +264,7 @@ def build_unified_result(
         collected_data: Nested dict of
             ``{model_name: {phase_name: [run_result, ...]}}``.
             Each run_result is a raw dict from ``run_agentic_benchmark()``.
-        skill_file: Name of the skill file used (e.g. ``"security_expert.md"``).
+        skill_file: Name of the skill file used (e.g. ``"security-awareness/SKILL.md"``).
         skill_hash: Hash of the skill file content.
         skill_text: Full text content of the skill file.
         judge_model: Model used for LLM-as-judge.

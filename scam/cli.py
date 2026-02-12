@@ -319,7 +319,7 @@ def _interactive_wizard(ctx: typer.Context) -> None:
     else:
         console.print(
             "[bold]Step 3:[/bold] Evaluate will compare [dim]no-skill[/dim] "
-            "vs [cyan]security_expert.md[/cyan] automatically.\n"
+            "vs [cyan]security-awareness/SKILL.md[/cyan] automatically.\n"
         )
 
     # ── Step 4: Parallelization ───────────────────────────────────
@@ -724,7 +724,7 @@ def evaluate(
     skill: Path = typer.Option(
         None,
         "--skill", "-s",
-        help="Path to the treatment skill file. Defaults to skills/security_expert.md.",
+        help="Path to the treatment skill file. Defaults to skills/security-awareness/SKILL.md.",
     ),
     output: Path = typer.Option(
         None,
@@ -819,7 +819,7 @@ def evaluate(
         )
 
     # Resolve skill path
-    skill_path = skill or SKILLS_DIR / "security_expert.md"
+    skill_path = skill or SKILLS_DIR / "security-awareness" / "SKILL.md"
     if not skill_path.exists():
         console.print(f"[red]Skill file not found: {skill_path}[/red]")
         raise typer.Exit(1)
@@ -857,7 +857,7 @@ def evaluate(
 
     console.print()
     console.print(_build_config_panel(
-        mode=f"[cyan]Evaluate[/cyan] (baseline vs {skill_path.name})",
+        mode=f"[cyan]Evaluate[/cyan] (baseline vs {'/'.join(skill_path.parts[-2:]) if skill_path.name == 'SKILL.md' else skill_path.name})",
         model_names=model_names,
         scenario_summary=_scenario_summary(filtered),
         judge_model=judge_model,
@@ -892,7 +892,8 @@ def evaluate(
 
     # collected_data: {model_name: {"no-skill": [...], skill_stem: [...]}}
     collected_data: dict[str, dict[str, list[dict]]] = {}
-    skill_phase_name = skill_path.stem
+    # For Agent Skills format (SKILL.md), use the parent dir name as phase name
+    skill_phase_name = skill_path.parent.name if skill_path.name == "SKILL.md" else skill_path.stem
     is_multi_model = len(model_names) > 1
 
     async def _eval_model(mn: str) -> None:
@@ -976,7 +977,7 @@ def evaluate(
     unified = build_unified_result(
         command="evaluate",
         collected_data=collected_data,
-        skill_file=skill_path.name,
+        skill_file="/".join(skill_path.parts[-2:]) if skill_path.name == "SKILL.md" else skill_path.name,
         skill_hash=skill_hash_val,
         skill_text=skill_content,
         judge_model=judge_model,
@@ -1269,7 +1270,7 @@ def publish(
         help="Output directory for the site (default: docs/).",
     ),
     skill: Path = typer.Option(
-        "skills/security_expert.md",
+        "skills/security-awareness/SKILL.md",
         "--skill",
         help="Path to the skill file to feature on the site.",
     ),
