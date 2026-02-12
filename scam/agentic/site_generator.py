@@ -189,6 +189,14 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   color: var(--text-secondary); font-size: 0.95rem;
   margin-bottom: 36px; max-width: 560px; line-height: 1.6;
 }
+.intro-prose {
+  margin-bottom: 32px;
+}
+.intro-prose p {
+  font-size: 0.95rem; line-height: 1.75; color: var(--text-secondary);
+  margin: 0 0 16px 0;
+}
+.intro-prose p:last-child { margin-bottom: 0; }
 
 /* ── What it measures ────────────────────────────────────── */
 .measures-grid {
@@ -488,13 +496,38 @@ a.cat-tag:hover {
 .lb-combined td:nth-child(5) {
   border-left: 1px solid var(--border);
 }
+
+/* ── Mobile leaderboard (hidden on desktop) ──────────────── */
+.lb-mobile-row { display: none; }
+.lb-m-scores {
+  display: flex; align-items: center; gap: 6px; margin-top: 4px;
+}
+.lb-m-bar {
+  flex: 1; height: 6px; background: var(--bg-subtle);
+  border-radius: 3px; overflow: hidden; min-width: 40px; max-width: 120px;
+}
+.lb-m-fill { height: 100%; border-radius: 3px; }
+.lb-m-fill.score-green { background: var(--success); }
+.lb-m-fill.score-yellow { background: var(--warning); }
+.lb-m-fill.score-red { background: var(--fail); }
+.lb-m-bl { font-size: 0.82rem; font-weight: 600; min-width: 32px; text-align: right; }
+.lb-m-label { font-size: 0.65rem; color: var(--text-tertiary); font-weight: 400; }
+.lb-m-arrow { color: var(--text-tertiary); font-size: 0.75rem; }
+.lb-m-sk { font-size: 0.82rem; font-weight: 600; color: var(--success); min-width: 32px; }
+
 @media (max-width: 700px) {
-  .lb-combined .lb-skill-col,
-  .lb-combined td:nth-child(5),
-  .lb-combined td:nth-child(6),
-  .lb-combined td:nth-child(7) { display: none; }
-  .lb-score-bar { min-width: 80px; }
-  .lb-bar { min-width: 40px; }
+  /* Hide all desktop columns except rank and model */
+  .lb-combined th:not(:nth-child(1)):not(:nth-child(2)),
+  .lb-combined td:not(:nth-child(1)):not(:nth-child(2)) { display: none; }
+  /* Hide desktop header row entirely – mobile rows are self-explanatory */
+  .lb-combined thead { display: none; }
+  /* Show mobile row inside model cell */
+  .lb-mobile-row { display: block; }
+  /* Allow model cell to use full width and wrap */
+  .lb-model { max-width: none; white-space: normal; overflow: visible; }
+  .lb-model-name { display: block; }
+  .lb-table td { padding: 10px 12px; }
+  .rank-cell { width: 32px; padding-right: 4px; }
 }
 .lb-table-wrap {
   background: var(--bg-card); border: 1px solid var(--border);
@@ -713,6 +746,26 @@ a.cat-tag:hover {
 
 /* ── Integration tabs ────────────────────────────────────── */
 .integrate-section { margin-top: 44px; }
+.integrate-mobile-hint { display: none; }
+.integrate-details { display: block; }
+@media (max-width: 700px) {
+  .integrate-mobile-hint {
+    display: block; padding: 16px; background: var(--bg-subtle);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+  .integrate-mobile-hint p {
+    font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;
+    margin: 0 0 12px 0;
+  }
+  .integrate-show-btn {
+    font-size: 0.8rem; font-weight: 600; color: var(--accent);
+    background: none; border: 1px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 6px 14px; cursor: pointer; font-family: var(--font);
+  }
+  .integrate-details { display: none; }
+  .integrate-desktop-only { display: none; }
+}
 .integrate-section h3 {
   font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;
   letter-spacing: -0.02em; font-family: var(--font-display);
@@ -2363,14 +2416,27 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
 <hr class="section-divider">
 <section class="section" id="measures">
   <div class="container">
-    <div class="section-label">The Problem</div>
-    <h2 class="section-title">What it measures</h2>
-    <p class="section-sub" style="max-width:680px;">
-      In our testing, we asked one of the most capable AI models available today to check a user's inbox.
-      Within ten seconds, it opened a phishing link, pulled a real password from the vault, and typed it
-      into the attacker's fake login page. Then, after the credentials were already gone,
-      it explained the attack perfectly. Press play to see for yourself.
-    </p>
+    <div class="section-label">Why SCAM</div>
+    <h2 class="section-title">The problem</h2>
+    <div class="intro-prose" style="max-width:680px;">
+      <p>
+        As AI agents become more capable, they are gaining access to the sensitive
+        information of the people they assist. SCAM measures whether agents will be
+        good stewards of that information against the kinds of threats humans
+        encounter every day.
+      </p>
+      <p>
+        Most benchmarks show an AI a phishing email and ask &ldquo;is this bad?&rdquo;
+        SCAM is different. It tests whether an agent can proactively recognize and
+        report threats during normal activity.
+      </p>
+      <p>
+        Below, we asked a leading AI model to check a user&rsquo;s inbox. Within
+        ten seconds it opened a phishing link, pulled a real password from the
+        vault, and typed it into the attacker&rsquo;s fake login page. Press play
+        to see for yourself.
+      </p>
+    </div>
     {baseline_embed}
     {skill_bridge}
     {skill_embed}
@@ -2470,10 +2536,16 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
     <div class="integrate-section">
       <h3>How to Use the Skill</h3>
       <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:24px;max-width:600px;line-height:1.6;">
-        The skill is plain text. Prepend it to your agent's system prompt and it works immediately.
-        Here's how to integrate it with each major provider.
+        The skill is plain text. Prepend it to your agent&rsquo;s system prompt and it works immediately.
+        <span class="integrate-desktop-only">Here&rsquo;s how to integrate it with each major provider.</span>
       </p>
-      {integration_steps}
+      <div class="integrate-mobile-hint">
+        <p>Detailed integration examples for each provider are easier to follow on a wider screen.</p>
+        <button class="integrate-show-btn" onclick="this.parentElement.style.display='none';this.closest('.integrate-section').querySelector('.integrate-details').style.display='block';">Show anyway</button>
+      </div>
+      <div class="integrate-details">
+        {integration_steps}
+      </div>
     </div>
   </div>
 </section>
@@ -2935,7 +3007,19 @@ def _render_leaderboard_rows(leaderboard: list[dict], is_evaluate: bool) -> str:
 
             rows += f"""<tr>
   <td class="rank-cell">{i}</td>
-  <td class="lb-model">{html.escape(model)}</td>
+  <td class="lb-model">
+    <span class="lb-model-name">{html.escape(model)}</span>
+    <div class="lb-mobile-row">
+      <div class="lb-m-scores">
+        <div class="lb-m-bar"><div class="lb-m-fill {bl_bar_cls}" style="width:{bl_pct}%"></div></div>
+        <span class="lb-m-bl {bl_bar_cls}">{bl:.0%}</span>
+        <span class="lb-m-label">baseline</span>
+        <span class="lb-m-arrow">&rarr;</span>
+        <span class="lb-m-sk">{sk:.0%}</span>
+        <span class="lb-m-label">w/ skill</span>
+      </div>
+    </div>
+  </td>
   <td class="num">
     <div class="lb-score-bar">
       <span class="lb-score-val {bl_bar_cls}">{bl:.0%}</span>
