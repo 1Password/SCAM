@@ -103,8 +103,17 @@ def prepare_scenario_data(scenario: dict) -> dict:
                 for tc in tool_calls:
                     tcid = tc.get("id", "")
                     short_id = tcid[-8:] if len(tcid) > 8 else tcid
+                    fn = tc.get("function", {})
+                    call_name = fn.get("name", "unknown")
+                    args_raw = fn.get("arguments", "{}")
+                    try:
+                        call_args = json.loads(args_raw) if isinstance(args_raw, str) else args_raw
+                    except (json.JSONDecodeError, TypeError):
+                        call_args = {}
                     formatted.append({
                         "call_str": _format_tool_call(tc),
+                        "call_name": call_name,
+                        "call_args": call_args if isinstance(call_args, dict) else {},
                         "dangerous": _is_dangerous_call(tc, dangerous_set),
                         "result": tool_results.get(tcid, ""),
                         "tool_call_id": short_id,
@@ -324,8 +333,8 @@ body {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
 }
 .scenario-header .left { flex: 1; min-width: 0; }
@@ -658,21 +667,78 @@ body {
   flex-shrink: 0;
 }
 .tc-accordion.open .tc-arrow { transform: rotate(90deg); }
-.tc-name {
-  font-family: var(--mono);
-  font-size: 0.76rem;
+.tc-friendly-name {
+  font-size: 0.8rem;
+  font-weight: 600;
   flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-secondary);
+  color: var(--text);
 }
-.tc-accordion.dangerous .tc-name { color: var(--fail); }
+.tc-accordion.dangerous .tc-friendly-name { color: var(--fail); }
+.tc-tool-badge {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  background: var(--border-light);
+  padding: 1px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
 .tc-status { flex-shrink: 0; display: flex; align-items: center; font-size: 0.8rem; }
-.tc-body { display: none; border-top: 1px solid var(--border); }
+.tc-body { display: none; border-top: 1px solid var(--border); padding: 10px 12px; }
 .tc-accordion.open .tc-body { display: block; }
 .tc-accordion.dangerous .tc-body { border-top-color: var(--fail-border); }
+
+/* Danger callout */
+.tc-danger-callout {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--fail-bg); border: 1px solid var(--fail-border);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  margin-bottom: 10px; font-size: 0.82rem;
+  color: var(--fail); font-weight: 600; line-height: 1.4;
+}
+.tc-danger-callout svg { flex-shrink: 0; margin-top: 2px; }
+
+/* Friendly argument display */
+.tc-args-table {
+  display: flex; flex-direction: column; gap: 0;
+  margin-bottom: 8px;
+}
+.tc-arg-row {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 4px 0; border-bottom: 1px solid var(--border-light);
+  font-size: 0.8rem;
+}
+.tc-arg-row:last-child { border-bottom: none; }
+.tc-arg-key {
+  color: var(--text-tertiary); font-size: 0.75rem;
+  min-width: 80px; flex-shrink: 0;
+}
+.tc-arg-val {
+  font-family: var(--mono); font-size: 0.78rem;
+  color: var(--text); word-break: break-all;
+}
+.tc-arg-sensitive .tc-arg-val {
+  color: var(--fail); font-weight: 600;
+  background: var(--fail-bg); padding: 1px 6px;
+  border-radius: 3px;
+}
+
+/* Raw response toggle */
+.tc-raw-section { margin-top: 8px; }
+.tc-raw-toggle {
+  font-size: 0.72rem; color: var(--text-tertiary);
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 4px 10px;
+  cursor: pointer; font-family: var(--font);
+  transition: color 0.1s, border-color 0.1s;
+}
+.tc-raw-toggle:hover { color: var(--text-secondary); border-color: var(--text-tertiary); }
+.tc-raw-content { margin-top: 6px; }
 
 /* JSON */
 .json-output {
@@ -1084,9 +1150,99 @@ _JS = """\
     return h;
   }
 
+  // ── Friendly tool call helpers ───────────────────────────
+  var TOOL_LABELS = {
+    fill_form: "Submitted a form",
+    read_email: "Read an email",
+    get_email: "Read an email",
+    open_email: "Opened an email",
+    get_credential: "Retrieved a credential from the vault",
+    lookup_password: "Retrieved a credential from the vault",
+    browse: "Opened a webpage",
+    open_url: "Opened a webpage",
+    visit_url: "Opened a webpage",
+    click_link: "Clicked a link",
+    send_email: "Sent an email",
+    search_emails: "Searched emails",
+    list_emails: "Listed emails",
+    reply_email: "Replied to an email",
+    forward_email: "Forwarded an email",
+    download_file: "Downloaded a file"
+  };
+
+  function friendlyToolName(name) {
+    if (TOOL_LABELS[name]) return TOOL_LABELS[name];
+    // Fallback: humanize snake_case
+    return name.replace(/_/g, " ").replace(/^./, function(c) { return c.toUpperCase(); });
+  }
+
+  function isSensitiveKey(key) {
+    var k = key.toLowerCase();
+    return /password|secret|token|credential|api.?key|auth/.test(k);
+  }
+
+  function renderArgs(args) {
+    if (!args || typeof args !== "object") return "";
+    var keys = Object.keys(args);
+    if (keys.length === 0) return "";
+    var rows = "";
+    keys.forEach(function(key) {
+      var val = args[key];
+      var valStr;
+      if (typeof val === "object" && val !== null) {
+        // Flatten nested objects into readable key-value sub-rows
+        var subKeys = Object.keys(val);
+        if (subKeys.length > 0) {
+          subKeys.forEach(function(sk) {
+            var sv = typeof val[sk] === "string" ? val[sk] : JSON.stringify(val[sk]);
+            var sensitive = isSensitiveKey(sk);
+            rows += '<div class="tc-arg-row' + (sensitive ? ' tc-arg-sensitive' : '') + '">'
+              + '<span class="tc-arg-key">' + escHtml(sk) + '</span>'
+              + '<span class="tc-arg-val">' + escHtml(sv) + '</span>'
+              + '</div>';
+          });
+          return;
+        }
+        valStr = JSON.stringify(val);
+      } else {
+        valStr = String(val);
+      }
+      var sensitive = isSensitiveKey(key);
+      rows += '<div class="tc-arg-row' + (sensitive ? ' tc-arg-sensitive' : '') + '">'
+        + '<span class="tc-arg-key">' + escHtml(key) + '</span>'
+        + '<span class="tc-arg-val">' + escHtml(valStr) + '</span>'
+        + '</div>';
+    });
+    return '<div class="tc-args-table">' + rows + '</div>';
+  }
+
+  function dangerExplain(name, args) {
+    var n = (name || "").toLowerCase();
+    if (n === "fill_form") {
+      var keys = args ? Object.keys(args.fields || args) : [];
+      var hasPassword = keys.some(function(k) { return isSensitiveKey(k); });
+      if (hasPassword) return "The agent submitted credentials to an untrusted page.";
+      return "The agent filled out a form on an untrusted page.";
+    }
+    if (n === "get_credential" || n === "lookup_password")
+      return "The agent retrieved sensitive credentials from the vault.";
+    if (n === "send_email" || n === "forward_email" || n === "reply_email")
+      return "The agent sent sensitive information via email.";
+    if (n === "browse" || n === "open_url" || n === "visit_url" || n === "click_link")
+      return "The agent visited a potentially malicious URL.";
+    return "This action was flagged as a security risk.";
+  }
+
   // ── Accordion toggle ──────────────────────────────────────
   function toggleTc(header) {
     header.closest('.tc-accordion').classList.toggle('open');
+  }
+
+  function toggleRaw(btn) {
+    var content = btn.nextElementSibling;
+    var showing = content.style.display !== "none";
+    content.style.display = showing ? "none" : "block";
+    btn.textContent = showing ? "Show raw response" : "Hide raw response";
   }
 
   // ── SVG icons ────────────────────────────────────────────
@@ -1172,7 +1328,7 @@ _JS = """\
     el.querySelectorAll('.tc-accordion[data-dangerous="1"]').forEach(function(acc) {
       acc.classList.add("dangerous");
       acc.classList.add("open");
-      var nameEl = acc.querySelector(".tc-name");
+      var nameEl = acc.querySelector(".tc-friendly-name");
       if (nameEl && nameEl.textContent.indexOf("\\u26A0") !== 0) {
         nameEl.textContent = "\\u26A0 " + nameEl.textContent;
       }
@@ -1199,15 +1355,34 @@ _JS = """\
       bodyInner += '<div class="tc-list" style="display:none;">';
       msg.tool_calls.forEach(function(tc, ti) {
         const dangerAttr = tc.dangerous ? ' data-dangerous="1"' : "";
+        const friendly = friendlyToolName(tc.call_name || "");
+        const toolBadge = '<span class="tc-tool-badge">' + escHtml(tc.call_name || "") + '</span>';
+        var tcBodyContent = "";
+        // Danger callout
+        if (tc.dangerous) {
+          tcBodyContent += '<div class="tc-danger-callout">'
+            + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 9v4"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>'
+            + '<span>' + dangerExplain(tc.call_name, tc.call_args) + '</span>'
+            + '</div>';
+        }
+        // Friendly arguments
+        tcBodyContent += renderArgs(tc.call_args || {});
+        // Tool result (collapsed raw)
+        if (tc.result) {
+          tcBodyContent += '<div class="tc-raw-section">'
+            + '<button class="tc-raw-toggle" onclick="window.__toggleRaw(this)">Show raw response</button>'
+            + '<div class="tc-raw-content" style="display:none;">'
+            + '<div class="json-output">' + highlightJson(tc.result) + '</div>'
+            + '</div></div>';
+        }
         bodyInner += '<div class="tc-accordion" id="msg-' + idx + '-tc-' + ti + '"' + dangerAttr + ' style="display:none;">'
           + '<div class="tc-header" onclick="window.__toggleTc(this)">'
           + '<span class="tc-arrow">\\u25B6</span>'
-          + '<span class="tc-name">' + escHtml(tc.call_str) + '</span>'
+          + '<span class="tc-friendly-name">' + escHtml(friendly) + '</span>'
+          + toolBadge
           + '<span class="tc-status"></span>'
           + '</div>'
-          + '<div class="tc-body">'
-          + '<div class="json-output">' + highlightJson(tc.result || "") + '</div>'
-          + '</div></div>';
+          + '<div class="tc-body">' + tcBodyContent + '</div></div>';
       });
       bodyInner += '</div>';
     }
@@ -1534,6 +1709,7 @@ _JS = """\
   window.__stop = stop;
   window.__showStatic = showStatic;
   window.__toggleTc = toggleTc;
+  window.__toggleRaw = toggleRaw;
   window.__renderScenario = renderScenario;
 
   document.addEventListener("DOMContentLoaded", () => {

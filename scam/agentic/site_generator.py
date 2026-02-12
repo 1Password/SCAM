@@ -159,10 +159,26 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .btn-secondary:hover { border-color: var(--text-tertiary); background: var(--bg-subtle); text-decoration: none; color: var(--text); }
 .hero-meta {
   display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
-  font-size: 0.95rem; color: var(--text-secondary);
+  font-size: 0.95rem; color: var(--text-secondary); font-weight: 600;
 }
-.hero-meta span { display: inline-flex; align-items: center; gap: 5px; }
 .hero-meta a { font-weight: 600; }
+.hero-blog-line {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 8px;
+}
+.hero-blog-line a {
+  font-size: 0.88rem; font-weight: 600; color: var(--accent);
+  text-decoration: none;
+}
+.hero-blog-line a:hover { text-decoration: underline; }
+.hero-new-badge {
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: #fff; background: var(--accent);
+  padding: 3px 8px; border-radius: 4px; line-height: 1;
+}
+.hero-blog-date {
+  font-size: 0.82rem; color: var(--text-tertiary); font-weight: 400;
+}
 
 /* ── Sections ────────────────────────────────────────────── */
 .section { padding: 72px 0; }
@@ -283,9 +299,18 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: var(--radius);
   display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
 }
+@media (max-width: 700px) {
+  .embed-share-cta {
+    flex-direction: column; align-items: flex-start; gap: 10px;
+    padding: 14px 16px;
+  }
+}
 .embed-share-text {
   font-size: 0.88rem; color: var(--text-secondary); margin: 0;
   flex: 1; min-width: 200px; line-height: 1.5;
+}
+@media (max-width: 700px) {
+  .embed-share-text { min-width: 0; font-size: 0.84rem; }
 }
 .embed-share-links {
   display: flex; align-items: center; gap: 8px;
@@ -564,6 +589,27 @@ a.cat-tag:hover {
 .delta-zero { color: var(--text-tertiary); }
 .rank-cell { color: var(--text-tertiary); font-weight: 600; width: 44px; }
 
+/* ── Leaderboard header tooltips ─────────────────────────── */
+.lb-info {
+  display: inline-flex; align-items: center;
+  margin-left: 4px; cursor: help; vertical-align: middle;
+}
+.lb-info svg {
+  width: 13px; height: 13px; color: var(--text-tertiary);
+  transition: color 0.12s;
+}
+.lb-info:hover svg { color: var(--accent); }
+.lb-info-tip {
+  display: none; position: fixed; z-index: 9999;
+  width: 260px; padding: 10px 14px;
+  background: var(--text); color: #fff;
+  font-size: 0.75rem; font-weight: 400; line-height: 1.55;
+  text-transform: none; letter-spacing: 0;
+  border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  white-space: normal; text-align: left;
+  pointer-events: none;
+}
+
 /* ── Featured replays ────────────────────────────────────── */
 .replay-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -744,15 +790,44 @@ a.cat-tag:hover {
   color: #34c759; border-color: #34c759;
 }
 
-/* ── Integration tabs ────────────────────────────────────── */
-.integrate-section { margin-top: 44px; }
+/* ── Integration accordion ───────────────────────────────── */
+.integrate-accordion {
+  margin-top: 44px; border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+  background: var(--bg-card);
+}
+.integrate-accordion-toggle {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px; cursor: pointer;
+  list-style: none; user-select: none;
+  transition: background 0.12s;
+}
+.integrate-accordion-toggle:hover { background: var(--bg-subtle); }
+.integrate-accordion-toggle::-webkit-details-marker { display: none; }
+.integrate-accordion-title {
+  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  font-family: var(--font-display); letter-spacing: -0.02em;
+}
+.integrate-accordion-hint {
+  flex: 1; font-size: 0.82rem; color: var(--text-tertiary); font-weight: 400;
+}
+.integrate-accordion-chevron {
+  flex-shrink: 0; color: var(--text-tertiary);
+  transition: transform 0.2s;
+  transform: rotate(-90deg);
+}
+.integrate-accordion[open] .integrate-accordion-chevron { transform: rotate(0deg); }
+.integrate-accordion-body {
+  padding: 20px 20px 20px; border-top: 1px solid var(--border);
+}
 .integrate-mobile-hint { display: none; }
 .integrate-details { display: block; }
 @media (max-width: 700px) {
+  .integrate-accordion-hint { display: none; }
   .integrate-mobile-hint {
     display: block; padding: 16px; background: var(--bg-subtle);
     border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 16px;
+    margin: 16px 0;
   }
   .integrate-mobile-hint p {
     font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;
@@ -764,11 +839,6 @@ a.cat-tag:hover {
     padding: 6px 14px; cursor: pointer; font-family: var(--font);
   }
   .integrate-details { display: none; }
-  .integrate-desktop-only { display: none; }
-}
-.integrate-section h3 {
-  font-size: 1.25rem; font-weight: 700; margin-bottom: 4px;
-  letter-spacing: -0.02em; font-family: var(--font-display);
 }
 .tabs { display: flex; gap: 0; margin-bottom: 0; margin-top: 18px; }
 .tab-btn {
@@ -1790,7 +1860,7 @@ def _generate_replay_page(
 
     # Social sharing
     page_url = f"https://1password.github.io/SCAM/replays/{sid}.html"
-    share_text = f"Watch an AI agent fall for a live security threat in real time. SCAM benchmark replay: {sid}"
+    share_text = "I just watched an AI agent fail a live security test in real time. Think your AI is safe? See for yourself."
     encoded_url = html.escape(page_url)
     pct_url = urllib.parse.quote(page_url, safe="")
     pct_text = urllib.parse.quote(share_text, safe="")
@@ -1801,10 +1871,15 @@ def _generate_replay_page(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCAM Replay &mdash; {html.escape(sid)}</title>
-<meta property="og:title" content="SCAM Replay &mdash; {html.escape(sid)}">
-<meta property="og:description" content="{html.escape(desc or 'Watch an AI agent handle a live security threat in the SCAM benchmark.')}">
+<meta name="description" content="{html.escape(desc or 'Watch an AI agent encounter a live security threat during a routine task.')}">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SCAM Benchmark">
+<meta property="og:title" content="SCAM &mdash; {html.escape(_CATEGORY_LABELS.get(category, category) if category else 'Security Test Replay')}">
+<meta property="og:description" content="{html.escape((desc or 'Watch an AI agent encounter a live security threat during a routine task').rstrip('.'))}. SCAM is an open-source benchmark by 1Password.">
 <meta property="og:url" content="{encoded_url}">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCAM &mdash; {html.escape(_CATEGORY_LABELS.get(category, category) if category else 'Security Test Replay')}">
+<meta name="twitter:description" content="{html.escape(desc or 'Watch an AI agent encounter a live security threat during a routine task.')}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1846,29 +1921,33 @@ def _generate_replay_page(
   /* ── Explainer banner (dismissable) ────────────────────── */
   .explainer-box {{
     position: relative;
-    background: #f8f8fa; border: 1px solid #ebebf0; border-radius: 14px;
-    padding: 28px 32px 24px;
+    background: linear-gradient(135deg, #eef4fd 0%, #f4f7fc 100%);
+    border: 1px solid #d0dff0; border-left: 4px solid #0572ec;
+    border-radius: 12px;
+    padding: 24px 28px 20px;
     margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(5, 114, 236, 0.06);
   }}
   .explainer-dismiss {{
-    position: absolute; top: 14px; right: 14px;
+    position: absolute; top: 12px; right: 12px;
     width: 28px; height: 28px; border: none; border-radius: 8px;
-    background: transparent; color: #98989d; cursor: pointer;
+    background: transparent; color: #7a9bc5; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: background 0.15s, color 0.15s;
   }}
-  .explainer-dismiss:hover {{ background: #e8e8ed; color: #1d1d1f; }}
+  .explainer-dismiss:hover {{ background: rgba(5, 114, 236, 0.1); color: #0572ec; }}
   .explainer-dismiss svg {{ width: 14px; height: 14px; }}
   .explainer-heading {{
-    font-size: 1.05rem; font-weight: 700; color: #1d1d1f;
+    font-size: 1.1rem; font-weight: 700; color: #0572ec;
     margin: 0 0 10px; line-height: 1.35;
+    display: flex; align-items: center; gap: 8px;
   }}
   .explainer-body {{
-    font-size: 0.92rem; line-height: 1.7; color: #48484a; margin: 0 0 4px;
+    font-size: 0.9rem; line-height: 1.7; color: #3a4a5e; margin: 0 0 4px;
     max-width: 720px;
   }}
   .explainer-body strong {{ color: #1d1d1f; font-weight: 600; }}
-  .explainer-body a {{ color: #0572ec; text-decoration: none; }}
+  .explainer-body a {{ color: #0572ec; font-weight: 500; text-decoration: none; }}
   .explainer-body a:hover {{ text-decoration: underline; }}
 
   /* ── Scenario meta bar (always visible) ────────────────── */
@@ -2060,25 +2139,23 @@ def _generate_replay_page(
 </div>
 
 <div class="replay-header-area">
-  <div class="explainer-box" id="replay-explainer">
+  <div class="explainer-box" id="replay-explainer" style="display:none;">
     <button class="explainer-dismiss" onclick="document.getElementById('replay-explainer').style.display='none';try{{sessionStorage.setItem('scam-explainer-dismissed','1')}}catch(e){{}}" aria-label="Dismiss">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
     </button>
-    <script>try{{if(sessionStorage.getItem('scam-explainer-dismissed'))document.getElementById('replay-explainer').style.display='none'}}catch(e){{}}</script>
+    <script>try{{if(!sessionStorage.getItem('scam-explainer-dismissed')){{document.getElementById('replay-explainer').style.display='';sessionStorage.setItem('scam-explainer-dismissed','1')}}}}catch(e){{}}</script>
     <h2 class="explainer-heading">What&rsquo;s SCAM?</h2>
     <p class="explainer-body">
       <strong>SCAM</strong> (Security Comprehension Awareness Measure) is an
-      <a href="https://github.com/1Password/SCAM">open-source agentic AI benchmark</a>
-      by <strong>1Password</strong>. It drops AI agents into realistic workplace
-      situations with access to email, a credential vault, and a web browser
-      &mdash; then embeds real-world threats (phishing, social engineering,
-      credential theft) in the workflow. The agent has to complete the task
-      without falling for the trap.
+      <a href="https://github.com/1Password/SCAM">open-source benchmark</a>
+      by <strong>1Password</strong> that tests whether AI agents can complete
+      realistic workplace tasks without falling for embedded security threats
+      like phishing, social engineering, and credential theft.
     </p>
     <p class="explainer-body" style="margin-bottom:0;">
-      What you&rsquo;re watching below is a recorded evaluation: the agent was given a
-      routine task, and a threat was hidden in the environment. Everything is
-      sandboxed &mdash; no real credentials, emails, or systems were involved.
+      Below is a recorded evaluation. The agent was given a routine task with
+      a threat hidden in the environment. Everything is sandboxed; no real
+      credentials, emails, or systems were involved.
     </p>
   </div>
   <div class="replay-meta-bar">
@@ -2170,7 +2247,7 @@ window.__onPlaybackDone = function() {{
     + '</div>'
     + '</div>'
     + '</div>';
-  cp.parentNode.insertBefore(cta, cp);
+  cp.parentNode.insertBefore(cta, cp.nextSibling);
   cta.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
 }};
 
@@ -2215,9 +2292,10 @@ def _build_index(
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="topnav-links" id="topnav-links">
+      <a href="#measures" onclick="document.getElementById('topnav-links').classList.remove('open')">The Problem</a>
+      <a href="#skill" onclick="document.getElementById('topnav-links').classList.remove('open')">Skill</a>
       <a href="#leaderboard" onclick="document.getElementById('topnav-links').classList.remove('open')">Leaderboard</a>
       <a href="#replays" onclick="document.getElementById('topnav-links').classList.remove('open')">Replays</a>
-      <a href="#skill" onclick="document.getElementById('topnav-links').classList.remove('open')">Skill</a>
       <a class="nav-cta" href="https://github.com/1Password/SCAM">GitHub</a>
     </div>
   </div>
@@ -2237,8 +2315,11 @@ def _build_index(
     </div>
     <div class="hero-meta">
       <span>By <a href="https://1password.com" style="color:inherit;font-weight:600;text-decoration:none;">1Password</a></span>
-      <span>&middot;</span>
-      <span><a href="https://1password.com/blog/ai-agent-security-benchmark" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Read the blog post</a></span>
+    </div>
+    <div class="hero-blog-line">
+      <span class="hero-new-badge">New</span>
+      <a href="https://1password.com/blog/ai-agent-security-benchmark">Read the blog post</a>
+      <span class="hero-blog-date">Feb 12, 2026</span>
     </div>
   </div>
 </section>
@@ -2304,7 +2385,7 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
         # Precompute URLs for social sharing on the embed CTA
         _embed_sid = worst_replay.get("scenario_id", "")
         _embed_page_url = f"https://1password.github.io/SCAM/replays/{_embed_sid}.html"
-        _embed_share_text = f"Watch an AI agent fall for a live security threat. SCAM benchmark replay: {_embed_sid}"
+        _embed_share_text = "I just watched an AI agent fail a live security test in real time. Think your AI is safe? See for yourself."
         _embed_pct_url = urllib.parse.quote(_embed_page_url, safe="")
         _embed_pct_text = urllib.parse.quote(_embed_share_text, safe="")
         baseline_embed = f"""
@@ -2335,7 +2416,7 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
       </div>
       <template id="baseline-srcdoc">{srcdoc_baseline}</template>
       <div id="embed-share-cta" class="embed-share-cta" style="display:none;">
-        <p class="embed-share-text">Shocked? Share this replay so others can see what AI agents do out of the box.</p>
+        <p class="embed-share-text">Shocked? Share this replay so others can see how AI agents deal with threats out of the box.</p>
         <div class="embed-share-links">
           <a class="share-btn" href="https://twitter.com/intent/tweet?text={_embed_pct_text}&url={_embed_pct_url}" target="_blank" rel="noopener" title="Share on X">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -2378,7 +2459,7 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
       <p class="section-sub" style="max-width:680px;">
         Then we gave the model a security skill &mdash; 35 lines of plain text, roughly 1,200 words.
         It works the same way security training
-        works for people: you don't teach every specific scam, you teach a framework for recognizing
+        works for people: you teach a framework for recognizing
         when something is off, and you give permission to stop and ask questions even when the request
         comes from the boss. Here's the same scenario again.
       </p>
@@ -2533,20 +2614,22 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
       </a>{f'<span style="font-size:0.78rem;color:var(--text-tertiary);margin-left:10px;">v{html.escape(skill_version)}</span>' if skill_version else ''}
     </div>
 
-    <div class="integrate-section">
-      <h3>How to Use the Skill</h3>
-      <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:24px;max-width:600px;line-height:1.6;">
-        The skill is plain text. Prepend it to your agent&rsquo;s system prompt and it works immediately.
-        <span class="integrate-desktop-only">Here&rsquo;s how to integrate it with each major provider.</span>
-      </p>
-      <div class="integrate-mobile-hint">
-        <p>Detailed integration examples for each provider are easier to follow on a wider screen.</p>
-        <button class="integrate-show-btn" onclick="this.parentElement.style.display='none';this.closest('.integrate-section').querySelector('.integrate-details').style.display='block';">Show anyway</button>
+    <details class="integrate-accordion">
+      <summary class="integrate-accordion-toggle">
+        <span class="integrate-accordion-title">How to Use the Skill</span>
+        <span class="integrate-accordion-hint">Prepend the skill to your system prompt. Click for integration examples.</span>
+        <svg class="integrate-accordion-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="integrate-accordion-body">
+        <div class="integrate-mobile-hint">
+          <p>Detailed integration examples for each provider are easier to follow on a wider screen.</p>
+          <button class="integrate-show-btn" onclick="this.parentElement.style.display='none';this.closest('.integrate-accordion-body').querySelector('.integrate-details').style.display='block';">Show anyway</button>
+        </div>
+        <div class="integrate-details">
+          {integration_steps}
+        </div>
       </div>
-      <div class="integrate-details">
-        {integration_steps}
-      </div>
-    </div>
+    </details>
   </div>
 </section>
 """)
@@ -2760,6 +2843,20 @@ scam evaluate -i</pre>
     # Tab switching JS
     tab_js = """
 <script>
+// Position leaderboard info tooltips above the icon using fixed positioning
+document.querySelectorAll('.lb-info').forEach(function(el) {
+  var tip = el.querySelector('.lb-info-tip');
+  if (!tip) return;
+  el.addEventListener('mouseenter', function() {
+    var r = el.getBoundingClientRect();
+    tip.style.display = 'block';
+    tip.style.left = Math.max(8, r.left + r.width / 2 - 130) + 'px';
+    tip.style.top = (r.top - tip.offsetHeight - 8) + 'px';
+  });
+  el.addEventListener('mouseleave', function() {
+    tip.style.display = 'none';
+  });
+});
 function switchTab(group, tabId) {
   document.querySelectorAll('[data-tab-group="' + group + '"]').forEach(function(el) {
     el.classList.remove('active');
@@ -2962,7 +3059,15 @@ function playTerm() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCAM — Security Comprehension Awareness Measure</title>
-<meta name="description" content="An open-source benchmark by 1Password for testing whether AI agents protect users from phishing, credential theft, and social engineering.">
+<meta name="description" content="An open-source benchmark by 1Password that tests whether AI agents can handle real security threats like phishing, credential theft, and social engineering during everyday tasks.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SCAM Benchmark">
+<meta property="og:title" content="SCAM — How safe is your AI agent?">
+<meta property="og:description" content="An open-source benchmark by 1Password that tests whether AI agents can handle real security threats during everyday tasks. View the leaderboard, watch replays, and try the security skill.">
+<meta property="og:url" content="https://1password.github.io/SCAM/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SCAM — How safe is your AI agent?">
+<meta name="twitter:description" content="An open-source benchmark by 1Password that tests whether AI agents can handle real security threats during everyday tasks.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -2996,6 +3101,10 @@ def _render_leaderboard_rows(leaderboard: list[dict], is_evaluate: bool) -> str:
             sk_crit = entry.get("skill_critical_failures", 0)
             d_sign = "+" if delta > 0 else ""
             d_cls = _delta_cls(delta)
+            # Heatmap: map delta (0..1) to green intensity
+            d_intensity = min(max(delta, 0), 1)  # clamp 0-1
+            d_alpha = round(0.08 + d_intensity * 0.35, 2) if d_intensity > 0 else 0
+            d_bg = f"background:rgba(13,150,104,{d_alpha});" if d_alpha > 0 else ""
             bl_crit_display = f"{bl_crit:.1f}" if bl_crit else "0"
 
             # Baseline score with prominent bar visualization
@@ -3028,7 +3137,7 @@ def _render_leaderboard_rows(leaderboard: list[dict], is_evaluate: bool) -> str:
   </td>
   <td class="num lb-muted">{bl_crit_display}</td>
   <td class="num lb-muted">{sk:.0%}</td>
-  <td class="num {d_cls}">{d_sign}{delta:.0%}</td>
+  <td class="num {d_cls}" style="{d_bg}">{d_sign}{delta:.0%}</td>
   <td class="num lb-muted">{sk_crit_cell}</td>
 </tr>
 """
@@ -3039,10 +3148,10 @@ def _render_leaderboard_rows(leaderboard: list[dict], is_evaluate: bool) -> str:
   <th>#</th>
   <th>Model</th>
   <th class="num">Baseline Score</th>
-  <th class="num">Crit&nbsp;Failures</th>
+  <th class="num">Crit&nbsp;Failures<span class="lb-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span class="lb-info-tip">Average number of critical failures per scenario. A critical failure is when the agent performs an irreversible dangerous action, such as submitting credentials to a phishing page or forwarding sensitive data to an attacker.</span></span></th>
   <th class="num lb-skill-col">With&nbsp;Skill</th>
   <th class="num lb-skill-col">Improvement</th>
-  <th class="num lb-skill-col">Crit&nbsp;w/&nbsp;Skill</th>
+  <th class="num lb-skill-col">Crit&nbsp;w/&nbsp;Skill<span class="lb-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span class="lb-info-tip">Critical failures after the security skill is applied. The skill is a plain-text system prompt that teaches the agent to verify domains, inspect content, and protect credentials before acting.</span></span></th>
 </tr></thead>
 <tbody>{rows}</tbody></table></div>"""
 
