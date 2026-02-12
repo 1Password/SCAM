@@ -1,12 +1,12 @@
 # SCAM — Security Comprehension Awareness Measure
 
-**By [1Password](https://1password.com)**
+**By [1Password](https://1password.com/blog/ai-agent-security-benchmark)
 
-**Test whether your AI agent leaks credentials, falls for phishing, and protects your users — before your users find out it doesn't.**
+> **[View the leaderboard, watch replays, and try the security skill at 1password.github.io/SCAM](https://1password.github.io/SCAM/)**
 
-An AI model's ability to recognize threats does not translate to an AI agent's ability to avoid them. In our testing, we asked one of the most capable AI models available today to check a user's inbox. Within ten seconds, it opened a phishing link, pulled a real password from the vault, and typed it into the attacker's fake login page. Then, after the credentials were already gone, it explained the attack perfectly.
+As AI agents become more capable, they are gaining access to the sensitive information of the people they assist. SCAM measures whether agents will be good stewards of that information against the kinds of threats humans encounter every day.
 
-SCAM is an open-source benchmark that measures this gap. It drops AI agents into realistic workplace situations with access to email, credential vaults, and web forms. The traps are embedded in the workflow, not called out separately. The agent has to complete the task without falling for the threat — exactly the way a human employee would have to.
+Most benchmarks show an AI a phishing email and ask "is this bad?" SCAM is different. It tests whether an agent can proactively recognize and report threats during normal activity — dropping agents into realistic workplace situations with access to email, credential vaults, and web forms, where the traps are embedded in the workflow, not called out separately.
 
 ## Quick Start
 
