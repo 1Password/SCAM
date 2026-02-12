@@ -243,10 +243,35 @@ body {
   text-align: center;
   padding: 56px 32px;
   margin-bottom: 24px;
-  background: linear-gradient(145deg, #f8f9fb 0%, #eef1f5 100%);
-  border: 1px dashed var(--border);
+  background: linear-gradient(145deg, #0d1117 0%, #161b22 40%, #1a1a2e 100%);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
+  position: relative; overflow: hidden;
 }
+.recording-stage::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px
+  );
+  pointer-events: none;
+}
+.recording-stage::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(5,114,236,0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+.stage-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 980px; font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25);
+  margin-bottom: 20px; position: relative; z-index: 1;
+}
+.stage-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  animation: stage-pulse 2s ease-in-out infinite;
+}
+@keyframes stage-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 .stage-icon {
   width: 72px; height: 72px;
   display: flex; align-items: center; justify-content: center;
@@ -254,23 +279,40 @@ body {
   color: #fff;
   border-radius: 50%;
   margin-bottom: 16px;
-  box-shadow: 0 4px 20px rgba(5, 114, 236, 0.25);
+  box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0.3);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative; z-index: 1;
+  animation: stage-ring 2.5s ease-out infinite;
+}
+@keyframes stage-ring {
+  0% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0.25); }
+  70% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 20px rgba(5,114,236,0); }
+  100% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0); }
 }
 .stage-icon:hover {
-  transform: scale(1.06);
-  box-shadow: 0 6px 28px rgba(5, 114, 236, 0.35);
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(5,114,236,0.5);
+  animation: none;
 }
 .stage-title {
-  font-size: 1.05rem; font-weight: 700; color: var(--text);
-  margin-bottom: 4px;
+  font-size: 1.05rem; font-weight: 700; color: #e6edf3;
+  margin-bottom: 4px; position: relative; z-index: 1;
 }
 .stage-sub {
-  font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px;
+  font-size: 0.8rem; color: #8b949e; margin-bottom: 20px;
+  position: relative; z-index: 1;
 }
+.stage-sub span[style] { color: #f87171 !important; }
 .stage-actions {
   display: flex; gap: 10px; align-items: center;
+  position: relative; z-index: 1;
+}
+.stage-actions .btn-ghost {
+  border-color: rgba(255,255,255,0.12); color: #8b949e;
+}
+.stage-actions .btn-ghost:hover {
+  background: rgba(255,255,255,0.06); color: #e6edf3; border-color: rgba(255,255,255,0.2);
 }
 
 /* ── Video export command snippet ── */
@@ -1579,12 +1621,13 @@ window.__SCAM_DATA__ = __BASELINE_DATA__ || __SKILL_DATA__;
     </div>`;
 
     h += `<div class="recording-stage" id="recording-stage">
+      <div class="stage-badge"><span class="stage-badge-dot"></span> Live Replay</div>
       <div class="stage-icon" onclick="window.__play()">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
           <polygon points="6 3 20 12 6 21" fill="currentColor"/>
         </svg>
       </div>
-      <div class="stage-title">Agent Recording</div>
+      <div class="stage-title">Watch the Agent Recording</div>
       <div class="stage-sub">${sc.messages.length} messages &middot; ${sc.tool_call_count} tool calls${sc.dangerous_call_count > 0 ? ' &middot; <span style="color:var(--fail);">' + sc.dangerous_call_count + ' dangerous</span>' : ''}</div>
       <div class="stage-actions">
         <button class="btn btn-play-lg" onclick="window.__play()">&#9654;&ensp;Play Recording</button>

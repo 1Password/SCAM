@@ -286,35 +286,83 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   border-radius: var(--radius); background: #fff;
 }
 .embed-poster {
-  width: 100%; height: 460px; border: 1px solid var(--border);
-  border-radius: var(--radius); background: var(--bg-subtle);
+  width: 100%; height: 460px; border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, #0d1117 0%, #161b22 40%, #1a1a2e 100%);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s;
+  cursor: pointer; transition: box-shadow 0.25s, border-color 0.25s;
   position: relative; overflow: hidden;
 }
-.embed-poster:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
-.embed-poster-play {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: var(--accent); color: #fff; border: none;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 16px rgba(5,114,236,0.3);
-  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+.embed-poster::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 3px, rgba(255,255,255,0.015) 3px, rgba(255,255,255,0.015) 4px
+  );
   pointer-events: none;
 }
-.embed-poster:hover .embed-poster-play { transform: scale(1.08); box-shadow: 0 6px 24px rgba(5,114,236,0.4); }
+.embed-poster::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, rgba(5,114,236,0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+.embed-poster:hover { box-shadow: 0 8px 40px rgba(5,114,236,0.25); border-color: rgba(5,114,236,0.3); }
+.embed-poster-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 980px; font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25);
+  margin-bottom: 20px; position: relative; z-index: 1;
+}
+.embed-poster-badge.badge-skill {
+  background: rgba(16,185,129,0.15); color: #34d399; border-color: rgba(16,185,129,0.25);
+}
+.embed-poster-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  animation: poster-pulse 2s ease-in-out infinite;
+}
+@keyframes poster-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.embed-poster-play {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0.3);
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+  pointer-events: none; position: relative; z-index: 1;
+  animation: play-ring 2.5s ease-out infinite;
+}
+@keyframes play-ring {
+  0% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0.25); }
+  70% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 20px rgba(5,114,236,0); }
+  100% { box-shadow: 0 4px 20px rgba(5,114,236,0.4), 0 0 0 0 rgba(5,114,236,0); }
+}
+.embed-poster:hover .embed-poster-play {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(5,114,236,0.5);
+  animation: none;
+}
 .embed-poster-title {
-  font-size: 1rem; font-weight: 700; color: var(--text); margin-top: 16px;
+  font-size: 1.05rem; font-weight: 700; color: #e6edf3; margin-top: 18px;
+  position: relative; z-index: 1;
 }
 .embed-poster-sub {
-  font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;
-  max-width: 400px; text-align: center; line-height: 1.5;
+  font-size: 0.84rem; color: #8b949e; margin-top: 6px;
+  max-width: 420px; text-align: center; line-height: 1.55;
+  position: relative; z-index: 1;
 }
 .embed-poster-stats {
-  display: flex; gap: 16px; margin-top: 14px;
-  font-size: 0.78rem; color: var(--text-tertiary);
+  display: flex; gap: 8px; margin-top: 16px;
+  font-size: 0.74rem; color: #6e7681;
+  position: relative; z-index: 1;
 }
-.embed-poster-stats span { display: flex; align-items: center; gap: 4px; }
-.embed-poster-stats .stat-danger { color: var(--fail); font-weight: 600; }
+.embed-poster-stats span {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 980px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06);
+}
+.embed-poster-stats .stat-danger {
+  color: #f87171; font-weight: 600;
+  background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.15);
+}
 .embed-share-cta {
   margin-top: 14px; padding: 16px 20px;
   background: var(--bg-subtle); border: 1px solid var(--border);
@@ -2557,7 +2605,7 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
         bl_desc = html.escape(bl_data.get("description", ""))
 
         srcdoc_baseline = _embed_iframe(bl_data, worst_replay["_baseline_meta"])
-        danger_stat = f' <span class="stat-danger">&middot; {bl_danger} dangerous</span>' if bl_danger else ""
+        danger_stat = f'<span class="stat-danger">{bl_danger} dangerous</span>' if bl_danger else ""
 
         # Precompute URLs for social sharing on the embed CTA
         _embed_sid = worst_replay.get("scenario_id", "")
@@ -2579,14 +2627,14 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
         <span class="emb-tag {w_score_cls}">{w_score_label}</span>
       </div>
       <div class="embed-poster" id="baseline-poster" onclick="activateEmbed('baseline')">
+        <div class="embed-poster-badge"><span class="embed-poster-badge-dot"></span> Live Replay</div>
         <div class="embed-poster-play">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><polygon points="6 3 20 12 6 21" fill="currentColor"/></svg>
         </div>
-        <div class="embed-poster-title">Agent Recording</div>
+        <div class="embed-poster-title">Watch the Agent Recording</div>
         <div class="embed-poster-sub">{bl_desc}</div>
         <div class="embed-poster-stats">
           <span>{bl_msgs} messages</span>
-          <span>&middot;</span>
           <span>{bl_tools} tool calls</span>
           {danger_stat}
         </div>
@@ -2626,7 +2674,7 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
             sk_desc = html.escape(sk_data.get("description", ""))
 
             srcdoc_skill = _embed_iframe(sk_data, worst_replay["_skill_meta"])
-            sk_danger_stat = f' <span class="stat-danger">&middot; {sk_danger} dangerous</span>' if sk_danger else ""
+            sk_danger_stat = f'<span class="stat-danger">{sk_danger} dangerous</span>' if sk_danger else ""
             skill_bridge = """
     <div style="margin:48px 0 12px;">
       <div class="section-label" style="margin-bottom:8px;">The Fix</div>
@@ -2655,14 +2703,14 @@ html, body {{ margin:0; padding:0; height:100%; overflow:hidden; background:#fff
         <span class="emb-tag {s_cls}">{s_label}</span>
       </div>
       <div class="embed-poster" id="skill-poster" onclick="activateEmbed('skill')">
+        <div class="embed-poster-badge badge-skill"><span class="embed-poster-badge-dot"></span> With Skill</div>
         <div class="embed-poster-play">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><polygon points="6 3 20 12 6 21" fill="currentColor"/></svg>
         </div>
-        <div class="embed-poster-title">Agent Recording &mdash; With Skill</div>
+        <div class="embed-poster-title">Watch With the Security Skill</div>
         <div class="embed-poster-sub">{sk_desc}</div>
         <div class="embed-poster-stats">
           <span>{sk_msgs} messages</span>
-          <span>&middot;</span>
           <span>{sk_tools} tool calls</span>
           {sk_danger_stat}
         </div>
