@@ -29,12 +29,25 @@ _RETRYABLE = (
 
 
 class OpenAIModel(BaseModel):
-    """OpenAI model via the Chat Completions API."""
+    """OpenAI model via the Chat Completions API.
 
-    def __init__(self, model_name: str):
+    Supports local endpoints (Ollama, vLLM) via optional base_url and api_key.
+    """
+
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        base_url: str | None = None,
+        api_key: str | None = None,
+    ):
         super().__init__(model_name)
-        api_key = get_api_key("openai")
-        self.client = openai.AsyncOpenAI(api_key=api_key)
+        if base_url is not None:
+            # Local endpoint: use provided key or placeholder (Ollama often needs no key)
+            key = api_key if api_key is not None else "ollama"
+            self.client = openai.AsyncOpenAI(api_key=key, base_url=base_url.rstrip("/") + "/")
+        else:
+            self.client = openai.AsyncOpenAI(api_key=get_api_key("openai"))
 
     # Models that require max_completion_tokens instead of the legacy max_tokens.
     _NEW_TOKEN_PARAM_PREFIXES = ("gpt-5", "o1", "o3", "o4")

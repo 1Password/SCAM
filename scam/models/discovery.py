@@ -7,6 +7,7 @@ exact model names.
 
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass, field
@@ -14,7 +15,7 @@ from dataclasses import dataclass, field
 from rich.console import Console
 
 # Provider names that trigger interactive discovery
-PROVIDER_NAMES = {"anthropic", "openai", "google", "gemini"}
+PROVIDER_NAMES = {"anthropic", "openai", "google", "gemini", "ollama"}
 
 # Regex to strip date suffixes like -2024-11-20 from OpenAI model IDs
 _DATE_SUFFIX = re.compile(r"-\d{4}-\d{2}-\d{2}$")
@@ -236,6 +237,47 @@ def list_google_models() -> list[DiscoveredModel]:
 
 
 # ---------------------------------------------------------------------------
+# Ollama (local) — OpenAI-compatible API
+# ---------------------------------------------------------------------------
+
+def list_ollama_models() -> list[DiscoveredModel]:
+    """List models available from a local Ollama instance.
+
+    GETs Ollama's /api/tags (default base http://localhost:11434).
+    Returns model IDs in the form "ollama/<name>" for use with create_model.
+    """
+    try:
+        import urllib.request
+
+        base = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434").rstrip("/")
+        # Ollama tags endpoint is at /api/tags, not under /v1
+        if base.endswith("/v1"):
+            base = base[: -3]
+        url = f"{base}/api/tags"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.load(resp)
+        models_list = data.get("models") or []
+        result: list[DiscoveredModel] = []
+        for m in models_list:
+            name = m.get("name") or ""
+            if not name:
+                continue
+            # Ollama may return "name:tag"; we use the full name for the API
+            result.append(
+                DiscoveredModel(
+                    id=f"ollama/{name}",
+                    provider="ollama",
+                    display_name=name,
+                )
+            )
+        result.sort(key=lambda x: x.display_name or x.id)
+        return result
+    except Exception:
+        return []
+
+
+# ---------------------------------------------------------------------------
 # Unified discovery
 # ---------------------------------------------------------------------------
 
@@ -323,6 +365,7 @@ def interactive_model_select(
             "openai": "OpenAI",
             "google": "Google (Gemini)",
             "gemini": "Google (Gemini)",
+            "ollama": "Ollama",
         }
         provider_filter = {_alias.get(p.lower(), p) for p in providers}
 
@@ -331,10 +374,16 @@ def interactive_model_select(
         if provider_filter and provider_name not in provider_filter:
             continue
         env_var = _PROVIDER_API_KEYS.get(provider_name)
-        if env_var and not os.environ.get(env_var):
+        if env_var is not None and not os.environ.get(env_var):
             _console.print(f"  [dim]{provider_name}: {env_var} not set — skipped[/dim]")
             continue
-        available[provider_name] = models
+        if provider_name == "Ollama":
+            ollama_models = list_ollama_models()
+            if ollama_models:
+                available[provider_name] = [(m.id, "Local") for m in ollama_models]
+            # If Ollama not running / no models, skip so we don't show empty section
+        else:
+            available[provider_name] = models
 
     if not available:
         _console.print(

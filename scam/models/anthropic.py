@@ -132,12 +132,25 @@ def _openai_messages_to_anthropic(
 
 
 class AnthropicModel(BaseModel):
-    """Anthropic Claude model via the Messages API."""
+    """Anthropic Claude model via the Messages API.
 
-    def __init__(self, model_name: str):
+    Supports local endpoints (e.g. vLLM Anthropic-compatible API) via optional
+    base_url and api_key.
+    """
+
+    def __init__(
+        self,
+        model_name: str,
+        *,
+        base_url: str | None = None,
+        api_key: str | None = None,
+    ):
         super().__init__(model_name)
-        api_key = get_api_key("anthropic")
-        self.client = anthropic.AsyncAnthropic(api_key=api_key)
+        if base_url is not None:
+            key = api_key if api_key is not None else "dummy"
+            self.client = anthropic.AsyncAnthropic(api_key=key, base_url=base_url.rstrip("/") + "/")
+        else:
+            self.client = anthropic.AsyncAnthropic(api_key=get_api_key("anthropic"))
 
     @retry(
         stop=stop_after_attempt(6),
