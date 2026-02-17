@@ -1828,3 +1828,91 @@ class TestCostCalculation:
 
         cost = estimate_agentic_cost("unknown-local-model", 10)
         assert cost is None
+
+    def test_estimate_agentic_cost_ollama_returns_none(self):
+        from scam.utils.config import estimate_agentic_cost
+
+        cost = estimate_agentic_cost("ollama/llama3.2", 10)
+        assert cost is None
+
+
+class TestLocalModels:
+    """Tests for local LLM support (Ollama, vLLM)."""
+
+    def test_parse_local_model_id_ollama(self):
+        from scam.utils.config import parse_local_model_id
+
+        assert parse_local_model_id("ollama/llama3.2") == ("ollama", "llama3.2")
+        assert parse_local_model_id("ollama/llama3.1") == ("ollama", "llama3.1")
+
+    def test_parse_local_model_id_vllm(self):
+        from scam.utils.config import parse_local_model_id
+
+        assert parse_local_model_id("vllm-openai/llama3.2") == (
+            "vllm-openai",
+            "llama3.2",
+        )
+        assert parse_local_model_id("vllm-anthropic/mistral") == (
+            "vllm-anthropic",
+            "mistral",
+        )
+
+    def test_parse_local_model_id_non_local(self):
+        from scam.utils.config import parse_local_model_id
+
+        assert parse_local_model_id("gpt-4o") is None
+        assert parse_local_model_id("claude-3-5-haiku") is None
+
+    def test_resolve_model_provider_local(self):
+        from scam.utils.config import resolve_model_provider
+
+        assert resolve_model_provider("ollama/llama3.2") == "ollama"
+        assert resolve_model_provider("vllm-openai/llama3.2") == "vllm-openai"
+        assert resolve_model_provider("vllm-anthropic/mistral") == "vllm-anthropic"
+
+    def test_create_model_ollama(self):
+        from scam.models import create_model
+        from scam.models.openai import OpenAIModel
+
+        model = create_model("ollama/llama3.2")
+        assert isinstance(model, OpenAIModel)
+        assert model.model_name == "llama3.2"
+        assert model.client._client.base_url.host == "localhost"
+        assert "11434" in str(model.client._client.base_url)
+
+    def test_create_model_vllm_openai(self):
+        from scam.models import create_model
+        from scam.models.openai import OpenAIModel
+
+        model = create_model("vllm-openai/llama3.2")
+        assert isinstance(model, OpenAIModel)
+        assert model.model_name == "llama3.2"
+        assert "8000" in str(model.client._client.base_url)
+
+    def test_create_model_vllm_anthropic(self):
+        from scam.models import create_model
+        from scam.models.anthropic import AnthropicModel
+
+        model = create_model("vllm-anthropic/mistral")
+        assert isinstance(model, AnthropicModel)
+        assert model.model_name == "mistral"
+        assert "8000" in str(model.client._client.base_url)
+
+    def test_list_ollama_models_mocked(self):
+        """list_ollama_models returns ollama/<name> IDs when API returns models."""
+        from scam.models.discovery import list_ollama_models
+
+        with patch("urllib.request.urlopen") as mock_open:
+            mock_resp = MagicMock()
+            mock_resp.read.return_value = b'{"models":[{"name":"llama3.2"},{"name":"mistral"}]}'
+            mock_resp.__enter__ = lambda self: self
+            mock_resp.__exit__ = lambda *a: None
+            mock_open.return_value = mock_resp
+
+            models = list_ollama_models()
+
+        assert len(models) == 2
+        ids = [m.id for m in models]
+        assert "ollama/llama3.2" in ids
+        assert "ollama/mistral" in ids
+        assert all(m.provider == "ollama" for m in models)

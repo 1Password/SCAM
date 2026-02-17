@@ -104,6 +104,8 @@ BENCHMARK_MODELS: dict[str, list[tuple[str, str]]] = {
         ("gemini-3-flash-preview", "Mid-tier"),
         ("gemini-2.5-flash", "Fast"),
     ],
+    # Ollama: list populated dynamically from local Ollama API in discovery
+    "Ollama": [],
 }
 
 # Flat set for quick lookups
@@ -113,11 +115,20 @@ BENCHMARK_MODEL_IDS: set[str] = {
     for model_id, _ in models
 }
 
-# Provider → env var mapping for quick key checks
-_PROVIDER_API_KEYS: dict[str, str] = {
+# Local LLM prefixes: "ollama/", "vllm-openai/", "vllm-anthropic/"
+LOCAL_PROVIDER_PREFIXES: tuple[str, ...] = ("ollama/", "vllm-openai/", "vllm-anthropic/")
+
+# Default base URLs for local endpoints (override via env)
+DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
+DEFAULT_VLLM_OPENAI_BASE_URL = "http://localhost:8000/v1"
+DEFAULT_VLLM_ANTHROPIC_BASE_URL = "http://localhost:8000"
+
+# Provider → env var mapping for quick key checks (None = no key required, e.g. Ollama)
+_PROVIDER_API_KEYS: dict[str, str | None] = {
     "Anthropic": "ANTHROPIC_API_KEY",
     "OpenAI": "OPENAI_API_KEY",
     "Google (Gemini)": "GOOGLE_API_KEY",
+    "Ollama": None,
 }
 
 # Derive provider model sets from the pricing table so there's a single
@@ -157,13 +168,28 @@ def get_api_key(provider: str) -> str:
     return key
 
 
+def parse_local_model_id(model_name: str) -> tuple[str, str] | None:
+    """If model_name is a local provider id (e.g. ollama/llama3.2), return (provider, model_id).
+
+    Returns None if not a local provider format.
+    """
+    for prefix in LOCAL_PROVIDER_PREFIXES:
+        if model_name.startswith(prefix):
+            return prefix.rstrip("/"), model_name[len(prefix) :].strip() or model_name
+    return None
+
+
 def resolve_model_provider(model_name: str) -> str:
     """Determine which provider a model belongs to.
 
-    Checks the hardcoded sets first, then falls back to prefix-based
-    detection so that dynamically discovered models (e.g. from the
-    ``models.list()`` APIs) route to the correct provider.
+    Checks local prefixes first (ollama/, vllm-openai/, vllm-anthropic/), then
+    the hardcoded sets, then prefix-based detection for cloud providers.
     """
+    # Local LLM prefixes take precedence
+    parsed = parse_local_model_id(model_name)
+    if parsed:
+        return parsed[0]
+
     if model_name in ANTHROPIC_MODELS:
         return "anthropic"
     if model_name in GOOGLE_MODELS:

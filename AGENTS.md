@@ -214,10 +214,11 @@ Follow the YAML format in CONTRIBUTING.md. Key rules:
 
 ## Testing
 
-Tests live in `tests/`. Run with:
+Tests live in `tests/`. The project uses a venv; run tests with the venv active (or invoke the venv’s Python directly):
 
 ```bash
-pytest tests/ -v
+.venv/bin/python -m pytest tests/ -v
+# or: source .venv/bin/activate && pytest tests/ -v
 ```
 
 Test files:
@@ -236,6 +237,24 @@ When adding new functionality, add corresponding tests. The test suite must pass
 scam run --model gpt-4o --skill skills/security-awareness/SKILL.md
 scam evaluate --model gpt-4o
 ```
+
+### Run against local LLMs (Ollama, vLLM)
+
+Local models use a `provider/model` format so the same flow and model selection work as for cloud providers:
+
+- **Ollama** (OpenAI-compatible): `ollama/<model>` — e.g. `ollama/llama3.2`. Default base URL: `http://localhost:11434/v1` (override with `OLLAMA_BASE_URL`). No API key required.
+- **vLLM OpenAI-compatible**: `vllm-openai/<model>`. Default: `http://localhost:8000/v1` (`VLLM_OPENAI_BASE_URL`). Optional `OPENAI_API_KEY`.
+- **vLLM Anthropic-compatible**: `vllm-anthropic/<model>`. Default: `http://localhost:8000` (`VLLM_ANTHROPIC_BASE_URL`). Optional `ANTHROPIC_API_KEY`.
+
+Examples:
+
+```bash
+scam run --model ollama/llama3.2 --skill skills/security-awareness/SKILL.md
+scam run --model vllm-openai/llama3.2
+scam evaluate --model ollama/mistral -i   # -i to pick from Ollama models interactively
+```
+
+Interactive model selection (`-i` or `--model ollama`) includes Ollama when the local server is running; vLLM models are specified explicitly (e.g. `vllm-openai/llama3.2`). Cost estimates are not shown for local models.
 
 ### Export results
 
