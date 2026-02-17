@@ -2283,8 +2283,8 @@ def _generate_summary_html(
                         p.append(f'      <div class="lb-runs-row"><span class="lb-runs-label">Skill runs:</span> {sk_runs_dots}</div>')
                         p.append(f'    </div>')
                 else:
-                    # Single run, no reproducibility data
-                    pass
+                    # Single run, no reproducibility data — close lb-stats (opened above)
+                    p.append('    </div>')
 
                 p.append('  </div>\n</div>')
         else:
